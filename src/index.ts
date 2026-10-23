@@ -4,10 +4,12 @@ import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 
 import { JWT_PASSWORD } from "./config.js";
-import { ContentModel, UserModel } from "./db.js";
+import { ContentModel, LinkModel, UserModel } from "./db.js";
 import { userMiddleware } from "./middleware.js";
+import { random } from "./utils.js";
 
 const app = express();
+const PORT = 3000;
 
 app.use(express.json());
 
@@ -71,14 +73,15 @@ app.post("/api/v1/content", userMiddleware, async (req: Request, res: Response) 
   }
 
   try {
-    await ContentModel.create({
+    const savedContent = await ContentModel.create({
       link,
       type,
+      title: "",
       userId: new mongoose.Types.ObjectId(userId),
       tags: [],
     });
 
-    res.json({ message: "Content added" });
+    res.status(201).json({ message: "Content added", content: savedContent });
   } catch {
     res.status(500).json({ message: "Unable to add content" });
   }
@@ -93,7 +96,10 @@ app.get("/api/v1/content", userMiddleware, async (req: Request, res: Response) =
   }
 
   try {
-    const content = await ContentModel.find({ userId: new mongoose.Types.ObjectId(userId) }).populate("userId", "username");
+    const content = await ContentModel.find({
+      userId: new mongoose.Types.ObjectId(userId),
+    }).populate("userId", "username");
+
     res.json({ content });
   } catch {
     res.status(500).json({ message: "Unable to fetch content" });
@@ -125,10 +131,68 @@ app.delete("/api/v1/content", userMiddleware, async (req: Request, res: Response
   }
 });
 
-app.post("/api/v1/brain/:shareLink", (req: Request, res: Response) => {
-  res.json({ message: "Brain share route not implemented yet", shareLink: req.params.shareLink });
+app.post("/api/v1/brain/share", userMiddleware, async (req: Request, res: Response) => {
+  const userId = req.userId;
+  const share = Boolean(req.body?.share);
+
+  if (!userId) {
+    res.status(401).json({ message: "Unauthorized" });
+    return;
+  }
+
+  try {
+    if (share) {
+      const hash = random(12);
+      const link = await LinkModel.findOneAndUpdate(
+        { userId: new mongoose.Types.ObjectId(userId) },
+        { userId: new mongoose.Types.ObjectId(userId), hash },
+        { new: true, upsert: true, setDefaultsOnInsert: true },
+      );
+
+      res.json({
+        message: "Brain shared",
+        shareLink: link?.hash ?? hash,
+      });
+      return;
+    }
+
+    await LinkModel.deleteOne({ userId: new mongoose.Types.ObjectId(userId) });
+    res.json({ message: "Brain sharing disabled" });
+  } catch {
+    res.status(500).json({ message: "Unable to update brain share" });
+  }
 });
 
-app.listen(3000, () => {
-  console.log("Server listening on http://localhost:3000");
+app.get("/api/v1/brain/:shareLink", async (req: Request, res: Response) => {
+  const hash = String(req.params.shareLink ?? "").trim();
+
+  if (!hash) {
+    res.status(400).json({ message: "Share link is required" });
+    return;
+  }
+
+  try {
+    const link = await LinkModel.findOne({ hash });
+
+    if (!link) {
+      res.status(411).json({ message: "Invalid share link" });
+      return;
+    }
+
+    const [content, user] = await Promise.all([
+      ContentModel.find({ userId: link.userId }),
+      UserModel.findById(link.userId),
+    ]);
+
+    res.json({
+      username: user?.username ?? "",
+      content,
+    });
+  } catch {
+    res.status(500).json({ message: "Unable to fetch shared brain" });
+  }
+});
+
+app.listen(PORT, () => {
+  console.log(`Server listening on http://localhost:${PORT}`);
 });

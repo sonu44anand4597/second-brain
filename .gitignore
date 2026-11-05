@@ -1,0 +1,23 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+*.tsbuildinfo
+.npm-cache/
+.cache/
+test-results/
+playwright-report/
+artifacts/
+.local-test-db.json
+.local-data/
+
+# Generated frontend compiler output (the source projects use noEmit).
+brainly-frontend/src/**/*.js
+brainly-frontend/src/**/*.js.map
+brainly-frontend/src/**/*.d.ts
+brainly-frontend/src/**/*.d.ts.map
+brainly-frontend/vite.config.js
+brainly-frontend/vite.config.js.map
+brainly-frontend/vite.config.d.ts
+brainly-frontend/vite.config.d.ts.map

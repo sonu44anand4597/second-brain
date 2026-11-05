@@ -1,32 +1,21 @@
-# React + TypeScript + Vite
+# Commonplace frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+React 19/TypeScript/Vite workspace connected to the existing Express/MongoDB API.
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```powershell
+npm ci
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Start the API from the parent directory first. Vite proxies `/api` to port 3000; use the Local URL it prints. Set the exact frontend origin in the API's `CLIENT_ORIGIN` if using another port. For production, serve `dist` with a same-origin `/api` reverse proxy and SPA route fallback.
+
+```powershell
+npm run typecheck
+npm run lint
+npm run build
+npm run test:e2e
+```
+
+See the [project README](../README.md) for environment/setup, [architecture](../ARCHITECTURE.md), [API](../docs/API.md), [test setup](../docs/TESTING.md), [deployment](../docs/DEPLOYMENT.md), and [teacher demonstration](../docs/DEMO.md).
+
+Source is organized by feature under `src/features`. TanStack Query owns server state; React context holds transient capture/detail/toast state. The command palette uses Ctrl/Cmd K and quick capture Ctrl/Cmd J. Notes use safe Markdown previews; fetched HTML is never injected into the UI. Theme preference is browser-local; authentication uses HttpOnly cookies, never localStorage tokens.

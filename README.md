@@ -2,7 +2,7 @@
 
 A thoughtful home for your knowledge. Capture sources and notes, organize collections, follow real connections, ask grounded questions, and practice recall.
 
-Built on **Sonu Anand's Second Brain / Brainly repository**, inspired by the Harkirat Singh / 100xDevs Second Brain project. The Express, JWT, MongoDB and React/Vite foundation remains; the original signup, signin, content and sharing routes retain their response contracts.
+
 
 ## Run locally
 
